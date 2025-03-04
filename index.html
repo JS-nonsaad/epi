@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>โปรแกรมคำนวณวันฉีดวัคซีน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { font-family: 'Prompt', sans-serif; }
+        .holiday { color: red; }
+    </style>
+</head>
+<body class="p-6 bg-gray-100">
+    <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+        <h1 class="text-2xl font-bold text-center">โปรแกรมคำนวณวันฉีดวัคซีน</h1>
+  <h2 class="text-xl font-bold text-center">คปสอ.โนนสะอาด จ.อุดรธานี</h2>
+        <div class="mt-4">
+            <label class="block">วันเกิดเด็ก</label>
+            <input type="date" id="birthdate" class="w-full p-2 border rounded mt-1">
+        </div>
+        <div class="mt-4">
+            <label class="block">วันที่คลินิกเปิดให้บริการ</label>
+            <select id="serviceDay" class="w-full p-2 border rounded mt-1">
+                <option value="จันทร์">จันทร์</option>
+                <option value="อังคาร">อังคาร</option>
+                <option value="พุธ">พุธ</option>
+                <option value="พฤหัสบดี">พฤหัสบดี</option>
+                <option value="ศุกร์">ศุกร์</option>
+            </select>
+        </div>
+        <div class="mt-4">
+            <label class="block">หน่วยบริการ</label>
+            <select id="hospital" class="w-full p-2 border rounded mt-1">
+                <option value="โรงพยาบาลโนนสะอาด">โรงพยาบาลโนนสะอาด</option>
+                <option value="รพ.สต.บ้านหนองแวงใหญ่">รพ.สต.บ้านหนองแวงใหญ่</option>
+                <option value="รพ.สต.บ้านหนองกุงศรี">รพ.สต.บ้านหนองกุงศรี</option>
+                <option value="รพ.สต.บ้านทมนางาม">รพ.สต.บ้านทมนางาม</option>
+                <option value="รพ.สต.บ้านโนนสำราญ">รพ.สต.บ้านโนนสำราญ</option>
+                <option value="รพ.สต.บ้านกุดดอกคำ">รพ.สต.บ้านกุดดอกคำ</option>
+                <option value="รพ.สต.บ้านทมป่าข่า">รพ.สต.บ้านทมป่าข่า</option>
+                <option value="รพ.สต.บ้านหนองแสง">รพ.สต.บ้านหนองแสง</option>
+                <option value="รพ.สต.บ้านท่าลุมภู">รพ.สต.บ้านท่าลุมภู</option>
+                <option value="รพ.สต.บ้านนาเหล่า">รพ.สต.บ้านนาเหล่า</option>
+            </select>
+        </div>
+        <button onclick="calculateSchedule()" class="mt-4 w-full bg-green-500 text-white p-2 rounded">คำนวณวันนัด</button>
+        <div id="result" class="mt-6 overflow-x-auto"></div>
+        <button onclick="printSchedule()" class="mt-4 w-full bg-yellow-500 text-white p-2 rounded">สั่งพิมพ์</button>
+    </div>
+
+    <script>
+    const dayMap = {
+        'จันทร์': 1,
+        'อังคาร': 2,
+        'พุธ': 3,
+        'พฤหัสบดี': 4,
+        'ศุกร์': 5
+    };
+
+    const holidays = [
+        
+  "01/01/2568",
+  "12/02/2568",
+  "06/04/2568",
+  "13/04/2568",
+  "14/04/2568",
+  "15/04/2568",
+  "16/04/2568",
+  "01/05/2568",
+  "04/05/2568",
+  "05/05/2568",
+  "09/05/2568",
+  "11/05/2568",
+  "12/05/2568",
+  "02/06/2568",
+  "03/06/2568",
+  "10/07/2568",
+  "11/07/2568",
+  "28/07/2568",
+  "11/08/2568",
+  "12/08/2568",
+  "13/10/2568",
+  "23/10/2568",
+  "05/12/2568",
+  "10/12/2568",
+  "31/12/2568",
+  "01/01/2569",
+  "02/01/2569",
+  "03/03/2569",
+  "06/04/2569",
+  "13/04/2569",
+  "14/04/2569",
+  "15/04/2569",
+  "01/05/2569",
+  "31/05/2569",
+  "01/06/2569",
+  "28/07/2569",
+  "29/07/2569",
+  "30/07/2569",
+  "12/08/2569",
+  "13/10/2569",
+  "23/10/2569",
+  "05/12/2569",
+  "10/12/2569",
+  "31/12/2569"
+
+    ];
+
+    const hospitalData = {
+        "โรงพยาบาลโนนสะอาด": {
+            officer: "นางสาวสมหญิง ใจดี",
+            phone: "081-234-5678"
+        },
+
+
+    "รพ.สต.บ้านหนองแวงใหญ่": {
+        "officer": "นางจิณัฏฐิ์ตา พันหล่อมโส",
+        "phone": "099-2294914"
+    },
+    "รพ.สต.บ้านหนองกุงศรี": {
+        "officer": "นางฐาปนี ภิบาลขันธ์",
+        "phone": "063-6073369"
+    },
+    "รพ.สต.บ้านทมนางาม": {
+        "officer": "นางสาวสุนทรียา ฝ่ายแก้ว",
+        "phone": "089-8408602"
+    },
+    "รพ.สต.บ้านโนนสำราญ": {
+        "officer": "นางสาวกมลทิพย์ ทองสุมาตร",
+        "phone": "xxxxxxxxxxxx"
+    },
+    "รพ.สต.บ้านกุดดอกคำ": {
+        "officer": "นางสุพรพิมล ภานนท์",
+        "phone": "064-3168880"
+    },
+    "รพ.สต.บ้านทมป่าข่า": {
+        "officer": "นางสาววันเพ็ญ พานศรี",
+        "phone": "093-3327703"
+    },
+    "รพ.สต.บ้านหนองแสง": {
+        "officer": "นางสาววิยะดา จันทาศรี",
+        "phone": "xxxxxxxxxxxx"
+    },
+    "รพ.สต.บ้านท่าลุมภู": {
+        "officer": "นางสาวรัตติกาล เวชภัณฑ์",
+        "phone": "085-7409322"
+    },
+    "รพ.สต.บ้านนาเหล่า": {
+        "officer": "นายวิรุตร์ โคตรชัย",
+        "phone": "062-5328992"
+    }
+
+
+    };
+
+    function formatDateBE(date) {
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear() + 543;
+        return `${day}/${month}/${year}`;
+    }
+
+    function isHoliday(date) {
+        return holidays.includes(formatDateBE(date));
+    }
+
+    function getNextWeekSameDay(date) {
+        date.setDate(date.getDate() + 7); // เลื่อนไปวันเดียวกันในสัปดาห์ถัดไป
+        return date;
+    }
+
+    function calculateSchedule() {
+        const birthdate = new Date(document.getElementById('birthdate').value);
+        if (!birthdate) return alert("กรุณากรอกวันเกิดเด็ก");
+
+        const today = new Date();
+        const ageInMonths = (today.getFullYear() - birthdate.getFullYear()) * 12 + (today.getMonth() - birthdate.getMonth());
+
+        const vaccines = [
+            { age: 1 , name: "HB2", details: "HB (วัคซีนป้องกันโรคตับอักเสบบี)  คำแนะนำ - เฉพาะรายที่คลอดจากมารดาที่เป็นพาหะของไวรัสตับอักเสบบี " },
+            
+            { age: 2, name: "DTP-HB-Hib1 IPV1, Rota1", details: "DTP-HB-Hib1  (วัคซีนรวมป้องกันโรคคอตีบ-บาดทะยัก-ไอกรน-ตับอักเสบบี-ฮิบ) // IPV1 (วัคซีนป้องกันโรคโปลิโอ ครั้งที่ 1) // Rota1 (วัคซีนโรต้า)" },
+
+            { age: 4, name: "DTP-HB-Hib2 IPV2, Rota rix 2", details: "ป้องกันโรคคอตีบ บาดทะยัก ไอกรน ตับอักเสบบี และโรต้าไวรัส" },
+            { age: 6, name: "DTP-HB-Hib3 OPV1", details: "ป้องกันโรคโปลิโอเพิ่มเติม" },
+            { age: 12, name: "MMR1", details: "ป้องกันโรคหัด คางทูม และหัดเยอรมัน" },
+            { age: 18, name: "DTP4 OPV2, MMR2", details: "กระตุ้นภูมิคุ้มกัน DTP และ MMR เพิ่มเติม" },
+            { age: 48, name: "DTP5 OPV3", details: "กระตุ้นภูมิคุ้มกัน DTP และ OPV เพิ่มเติม" }
+        ];
+
+        const hospital = document.getElementById("hospital").value;
+        const hospitalInfo = hospitalData[hospital];
+
+        let resultHtml = `<div class="mb-4">
+            <p><strong>หน่วยบริการ:</strong> ${hospital}</p>
+            <p><strong>เจ้าหน้าที่รับผิดชอบ:</strong> ${hospitalInfo.officer}</p>
+            <p><strong>เบอร์โทรติดต่อ:</strong> ${hospitalInfo.phone}</p>
+        </div>`;
+
+        resultHtml += '<table class="w-full border mt-4 text-sm sm:text-base"><thead><tr class="bg-gray-200">'
+            + '<th class="border p-2">อายุ</th><th class="border p-2">วัคซีน</th><th class="border p-2">วันที่ครบอายุ</th><th class="border p-2">วันนัด</th></tr></thead><tbody>';
+
+        const targetDay = dayMap[document.getElementById('serviceDay').value];
+
+        vaccines.forEach(vaccine => {
+            if (vaccine.age > ageInMonths) { // แสดงเฉพาะวัคซีนที่เด็กยังไม่ได้รับ
+                let date = new Date(birthdate);
+                date.setMonth(date.getMonth() + vaccine.age);
+
+                let serviceDate = new Date(date);
+                let currentDay = serviceDate.getDay();
+                let dayDifference = targetDay - currentDay;
+                if (dayDifference <= 0) dayDifference += 7;
+                serviceDate.setDate(serviceDate.getDate() + dayDifference);
+
+                let isHolidayFlag = isHoliday(serviceDate);
+                if (isHolidayFlag) {
+                    serviceDate = getNextWeekSameDay(serviceDate); // เลื่อนไปวันเดียวกันในสัปดาห์ถัดไป
+                }
+
+                resultHtml += <tr><td class='border p-2'>${vaccine.age} เดือน</td>
+                            + <td class='border p-2 flex items-center justify-between'>${vaccine.name} <button onclick="showVaccineInfo('${vaccine.name}', '${vaccine.details}')" class='bg-blue-500 text-white px-2 py-1 rounded-full text-xs'>i</button></td>
+                            + <td class='border p-2'>${formatDateBE(date)}</td>
+                            + `<td class='border p-2'>${formatDateBE(serviceDate)} ${isHolidayFlag ? '<span class="holiday">(เลื่อนนัดเนื่องจากตรงกับวันหยุดราชการ)</span>' : ''}</td></tr>`;
+            }
+        });
+
+        resultHtml += '</tbody></table>';
+        document.getElementById('result').innerHTML = resultHtml;
+    }
+
+    function printSchedule() {
+        const result = document.getElementById('result').innerHTML;
+        if (!result) {
+            alert("กรุณากรอกข้อมูลและกด Submit ก่อนพิมพ์");
+            return;
+        }
+        window.print();
+    }
+
+    function showVaccineInfo(name, details) {
+        Swal.fire({
+            title: name,
+            text: details,
+            icon: 'info',
+            confirmButtonText: 'ปิด'
+        });
+    }
+    </script>
+</body>
+</html>
