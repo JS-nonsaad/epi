@@ -10,6 +10,43 @@
     <style>
         body { font-family: 'Prompt', sans-serif; }
         .holiday { color: red; }
+
+   @media print {
+        body {
+            margin: 0; /* ลบ margin เพื่อใช้พื้นที่หน้ากระดาษให้เต็มที่ */
+            padding: 0;
+            font-size: 12px; /* ปรับขนาดฟอนต์ให้เล็กลงเพื่อให้ข้อมูลอยู่ใน 1 หน้า */
+        }
+        .max-w-2xl {
+            max-width: 100% !important; /* ให้เนื้อหากว้างเต็มหน้ากระดาษ */
+            margin: 0 auto; /* จัดกลาง */
+            padding: 10px; /* เพิ่ม padding เล็กน้อย */
+        }
+        table {
+            width: 100%; /* ให้ตารางกว้างเต็มหน้ากระดาษ */
+            border-collapse: collapse; /* รวมเส้นขอบตาราง */
+        }
+        th, td {
+            padding: 4px; /* ลด padding ของเซลล์ตาราง */
+            border: 1px solid #000; /* เพิ่มเส้นขอบตาราง */
+            font-size: 10px; /* ปรับขนาดฟอนต์ในตารางให้เล็กลง */
+        }
+        button {
+            display: none; /* ซ่อนปุ่มเมื่อพิมพ์ */
+        }
+        #result {
+            overflow: visible; /* ไม่อนุญาตให้เนื้อหาตัดออก */
+            page-break-inside: avoid; /* ไม่อนุญาตให้ตารางตัดข้ามหน้า */
+        }
+    }
+
+
+
+
+
+
+
+
     </style>
 </head>
 <body class="p-6 bg-gray-100">
