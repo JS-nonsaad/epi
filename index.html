@@ -11,54 +11,107 @@
         body { font-family: 'Prompt', sans-serif; }
         .holiday { color: red; }
 
-   @media print {
-        body {
-            margin: 0; /* ลบ margin เพื่อใช้พื้นที่หน้ากระดาษให้เต็มที่ */
-            padding: 0;
-            font-size: 12px; /* ปรับขนาดฟอนต์ให้เล็กลงเพื่อให้ข้อมูลอยู่ใน 1 หน้า */
+        /* Toggle Switch Styles */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
         }
-        .max-w-2xl {
-            max-width: 100% !important; /* ให้เนื้อหากว้างเต็มหน้ากระดาษ */
-            margin: 0 auto; /* จัดกลาง */
-            padding: 10px; /* เพิ่ม padding เล็กน้อย */
+        .toggle-label {
+            margin: 0 10px;
         }
-        table {
-            width: 100%; /* ให้ตารางกว้างเต็มหน้ากระดาษ */
-            border-collapse: collapse; /* รวมเส้นขอบตาราง */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
         }
-        th, td {
-            padding: 4px; /* ลด padding ของเซลล์ตาราง */
-            border: 1px solid #000; /* เพิ่มเส้นขอบตาราง */
-            font-size: 10px; /* ปรับขนาดฟอนต์ในตารางให้เล็กลง */
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
         }
-        button {
-            display: none; /* ซ่อนปุ่มเมื่อพิมพ์ */
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
         }
-        #result {
-            overflow: visible; /* ไม่อนุญาตให้เนื้อหาตัดออก */
-            page-break-inside: avoid; /* ไม่อนุญาตให้ตารางตัดข้ามหน้า */
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
         }
-    }
+        input:checked + .toggle-slider {
+            background-color: #2196F3;
+        }
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
 
-
-
-
-
-
-
-
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+                font-size: 12px;
+            }
+            .max-w-2xl {
+                max-width: 100% !important;
+                margin: 0 auto;
+                padding: 10px;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th, td {
+                padding: 4px;
+                border: 1px solid #000;
+                font-size: 10px;
+            }
+            button, .toggle-container, .input-section {
+                display: none;
+            }
+            #result {
+                overflow: visible;
+                page-break-inside: avoid;
+            }
+        }
     </style>
 </head>
 <body class="p-6 bg-gray-100">
     <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-lg">
         <h1 class="text-2xl font-bold text-center">โปรแกรมคำนวณวันฉีดวัคซีน</h1>
         <h2 class="text-xl font-bold text-center">คปสอ.โนนสะอาด จ.อุดรธานี</h2>
-        <div class="mt-4">
+        
+        <div class="input-section mt-4">
             <label class="block">วันเกิดเด็ก</label>
             <input type="date" id="birthdate" class="w-full p-2 border rounded mt-1">
         </div>
-        <div class="mt-4">
-            <label class="block">วันที่คลินิกเปิดให้บริการ</label>
+        
+        <div class="toggle-container mt-4">
+            <span class="toggle-label">นัดรายสัปดาห์</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="scheduleTypeToggle" onchange="toggleScheduleType()">
+                <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label">นัดรายเดือน</span>
+        </div>
+        
+        <!-- ส่วนเลือกวันนัดรายสัปดาห์ -->
+        <div id="weeklyScheduleSection" class="input-section mt-4">
+            <label class="block">วันที่คลินิกเปิดให้บริการ (รายสัปดาห์)</label>
             <select id="serviceDay" class="w-full p-2 border rounded mt-1">
                 <option value="จันทร์">จันทร์</option>
                 <option value="อังคาร">อังคาร</option>
@@ -67,7 +120,47 @@
                 <option value="ศุกร์">ศุกร์</option>
             </select>
         </div>
-        <div class="mt-4">
+        
+        <!-- ส่วนเลือกวันนัดรายเดือน -->
+        <div id="monthlyScheduleSection" class="input-section mt-4" style="display: none;">
+            <label class="block">วันที่คลินิกเปิดให้บริการ (รายเดือน)</label>
+            <select id="serviceDayOfMonth" class="w-full p-2 border rounded mt-1">
+                <option value="">เลือกวันที่</option>
+                <option value="1">วันที่ 1</option>
+                <option value="2">วันที่ 2</option>
+                <option value="3">วันที่ 3</option>
+                <option value="4">วันที่ 4</option>
+                <option value="5">วันที่ 5</option>
+                <option value="6">วันที่ 6</option>
+                <option value="7">วันที่ 7</option>
+                <option value="8">วันที่ 8</option>
+                <option value="9">วันที่ 9</option>
+                <option value="10">วันที่ 10</option>
+                <option value="11">วันที่ 11</option>
+                <option value="12">วันที่ 12</option>
+                <option value="13">วันที่ 13</option>
+                <option value="14">วันที่ 14</option>
+                <option value="15">วันที่ 15</option>
+                <option value="16">วันที่ 16</option>
+                <option value="17">วันที่ 17</option>
+                <option value="18">วันที่ 18</option>
+                <option value="19">วันที่ 19</option>
+                <option value="20">วันที่ 20</option>
+                <option value="21">วันที่ 21</option>
+                <option value="22">วันที่ 22</option>
+                <option value="23">วันที่ 23</option>
+                <option value="24">วันที่ 24</option>
+                <option value="25">วันที่ 25</option>
+                <option value="26">วันที่ 26</option>
+                <option value="27">วันที่ 27</option>
+                <option value="28">วันที่ 28</option>
+                <option value="29">วันที่ 29</option>
+                <option value="30">วันที่ 30</option>
+                <option value="31">วันที่ 31</option>
+            </select>
+        </div>
+        
+        <div class="input-section mt-4">
             <label class="block">หน่วยบริการ</label>
             <select id="hospital" class="w-full p-2 border rounded mt-1">
                 <option value="โรงพยาบาลโนนสะอาด">โรงพยาบาลโนนสะอาด</option>
@@ -77,11 +170,12 @@
                 <option value="รพ.สต.บ้านโนนสำราญ">รพ.สต.บ้านโนนสำราญ</option>
                 <option value="รพ.สต.บ้านกุดดอกคำ">รพ.สต.บ้านกุดดอกคำ</option>
                 <option value="รพ.สต.บ้านทมป่าข่า">รพ.สต.บ้านทมป่าข่า</option>
-                <option value="รพ.سต.บ้านหนองแสง">รพ.สต.บ้านหนองแสง</option>
+                <option value="รพ.สต.บ้านหนองแสง">รพ.สต.บ้านหนองแสง</option>
                 <option value="รพ.สต.บ้านท่าลุมภู">รพ.สต.บ้านท่าลุมภู</option>
                 <option value="รพ.สต.บ้านนาเหล่า">รพ.สต.บ้านนาเหล่า</option>
             </select>
         </div>
+        
         <button onclick="calculateSchedule()" class="mt-4 w-full bg-green-500 text-white p-2 rounded">คำนวณวันนัดฉีดวัคซีน</button>
         <div id="result" class="mt-6 overflow-x-auto"></div>
         <button onclick="printSchedule()" class="mt-4 w-full bg-yellow-500 text-white p-2 rounded">สั่งพิมพ์</button>
@@ -149,6 +243,13 @@
         }
     };
 
+    // สลับระหว่างตัวเลือกรายสัปดาห์และรายเดือน
+    function toggleScheduleType() {
+        const isMonthly = document.getElementById('scheduleTypeToggle').checked;
+        document.getElementById('weeklyScheduleSection').style.display = isMonthly ? 'none' : 'block';
+        document.getElementById('monthlyScheduleSection').style.display = isMonthly ? 'block' : 'none';
+    }
+
     function formatDateBE(date) {
         const day = String(date.getDate()).padStart(2, '0');
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -160,64 +261,142 @@
         return holidays.includes(formatDateBE(date));
     }
 
+    function isWeekend(date) {
+        const day = date.getDay();
+        return day === 0 || day === 6; // 0 = วันอาทิตย์, 6 = วันเสาร์
+    }
+
     function getNextWeekSameDay(date) {
-        date.setDate(date.getDate() + 7); // เลื่อนไปวันเดียวกันในสัปดาห์ถัดไป
-        return date;
+        const newDate = new Date(date);
+        newDate.setDate(newDate.getDate() + 7); // เลื่อนไปวันเดียวกันในสัปดาห์ถัดไป
+        return newDate;
+    }
+
+    function findNextAvailableDay(date, dayOfMonth) {
+        const isMonthly = document.getElementById('scheduleTypeToggle').checked;
+        
+        if (isMonthly) {
+            // การนัดรายเดือน - หาวันที่ตามที่ระบุในเดือนถัดไป
+            const targetDay = parseInt(dayOfMonth);
+            let resultDate = new Date(date);
+            
+            // ปรับให้เป็นวันที่ต้องการในเดือนปัจจุบัน
+            resultDate.setDate(targetDay);
+            
+            // ถ้าวันที่ในเดือนปัจจุบันผ่านไปแล้ว ให้ไปเดือนถัดไป
+            if (resultDate < date) {
+                resultDate.setMonth(resultDate.getMonth() + 1);
+                // ตรวจสอบว่าเดือนถัดไปมีวันที่นั้นหรือไม่
+                if (resultDate.getDate() !== targetDay) {
+                    // ถ้าไม่มีวันที่นั้น (เช่น วันที่ 31 ในเดือนที่มี 30 วัน) ให้ใช้วันสุดท้ายของเดือน
+                    resultDate.setDate(0); // เซ็ตเป็นวันสุดท้ายของเดือนก่อนหน้า
+                    resultDate.setDate(resultDate.getDate() + 1); // เพิ่มอีก 1 วันเพื่อเป็นวันแรกของเดือนถัดไป
+                    resultDate.setMonth(resultDate.getMonth() + 1); // ไปเดือนถัดไปอีกครั้ง
+                    resultDate.setDate(Math.min(targetDay, new Date(resultDate.getFullYear(), resultDate.getMonth() + 1, 0).getDate()));
+                }
+            }
+            
+            // ตรวจสอบว่าวันที่เลือกตรงกับวันหยุดหรือไม่
+            while (isHoliday(resultDate) || isWeekend(resultDate)) {
+                // ถ้าตรงกับวันหยุด ให้เลื่อนไปวันถัดไป
+                resultDate.setDate(resultDate.getDate() + 1);
+            }
+            
+            return resultDate;
+        } else {
+            // การนัดรายสัปดาห์ - ใช้ฟังก์ชันเดิม
+            const targetDay = dayMap[document.getElementById('serviceDay').value];
+            let serviceDate = new Date(date);
+            let currentDay = serviceDate.getDay();
+            let dayDifference = targetDay - currentDay;
+            
+            if (dayDifference <= 0) dayDifference += 7;
+            serviceDate.setDate(serviceDate.getDate() + dayDifference);
+            
+            // ตรวจสอบว่าตรงกับวันหยุดหรือไม่
+            if (isHoliday(serviceDate)) {
+                serviceDate = getNextWeekSameDay(serviceDate);
+            }
+            
+            return serviceDate;
+        }
     }
 
     function calculateSchedule() {
         const birthdate = new Date(document.getElementById('birthdate').value);
-        if (!birthdate) return alert("กรุณากรอกวันเกิดเด็ก");
+        if (!birthdate || isNaN(birthdate.getTime())) {
+            return Swal.fire({
+                title: 'ข้อผิดพลาด',
+                text: 'กรุณากรอกวันเกิดเด็ก',
+                icon: 'error',
+                confirmButtonText: 'ตกลง'
+            });
+        }
+
+        const isMonthly = document.getElementById('scheduleTypeToggle').checked;
+        if (isMonthly) {
+            const dayOfMonth = document.getElementById('serviceDayOfMonth').value;
+            if (!dayOfMonth) {
+                return Swal.fire({
+                    title: 'ข้อผิดพลาด', 
+                    text: 'กรุณาเลือกวันที่นัดหมายรายเดือน',
+                    icon: 'error',
+                    confirmButtonText: 'ตกลง'
+                });
+            }
+        }
 
         const today = new Date();
         const ageInMonths = (today.getFullYear() - birthdate.getFullYear()) * 12 + (today.getMonth() - birthdate.getMonth());
 
         const vaccines = [
-            { age: 1 , name: "HB2", details: "HB2 (วัคซีนป้องกันโรคตับอักเสบบี ครั้งที่ 2)  คำแนะนำ - เฉพาะรายที่คลอดจากมารดาที่เป็นพาหะของไวรัสตับอักเสบบี " },
+            { age: 1, name: "HB2", details: "HB2 (วัคซีนป้องกันโรคตับอักเสบบี ครั้งที่ 2)  คำแนะนำ - เฉพาะรายที่คลอดจากมารดาที่เป็นพาหะของไวรัสตับอักเสบบี " },
             { age: 2, name: "DTP-HB-Hib1, IPV1, Rota1", details: "DTP-HB-Hib1  (วัคซีนรวมป้องกันโรคคอตีบ-บาดทะยัก-ไอกรน-ตับอักเสบบี-ฮิบ ครั้งที่ 1) // IPV1 (วัคซีนป้องกันโรคโปลิโอ ครั้งที่ 1) // Rota1 (วัคซีนโรต้า ครั้งที่ 1)  คำแนะนำ - การให้วัคซีนโรต้าครั้งแรก ควรให้ก่อนทารกอายุครบ 15 สัปดาห์" },
             { age: 4, name: "DTP-HB-Hib2, IPV2, Rota2", details: "DTP-HB-Hib2  (วัคซีนรวมป้องกันโรคคอตีบ-บาดทะยัก-ไอกรน-ตับอักเสบบี-ฮิบ ครั้งที่ 2) // IPV2 (วัคซีนป้องกันโรคโปลิโอ ครั้งที่ 2) // Rota2 (วัคซีนโรต้า ครั้งที่ 2)  คำแนะนำ - การให้วัคซีนโรด้าครั้งสุดท้ายควรเสร็จสิ้นก่อนทารกอายุครบ 32 สัปดาห์ หากช้ากว่าที่กำหนดให้ดำเนินการตามคำแนะนำการให้วัคซีนล่าช้า" },
             { age: 6, name: "DTP-HB-Hib3, OPV3, Rota3", details: "DTP-HB-Hib3  (วัคซีนรวมป้องกันโรคคอตีบ-บาดทะยัก-ไอกรน-ตับอักเสบบี-ฮิบ ครั้งที่ 3 // OPV3 (วัคซีนป้องกันโรคโปลิโอ ครั้งที่ 3) // Rota3 (วัคซีนโรต้า ครั้งที่ 3) คำแนะนำ - กรณีใช้วัคซีน Rotarix ให้เพียง 2 ครั้ง (ไม่ต้องให้ครั้งที่ 3) และการให้วัคซีนโรต้าครั้งสุดท้าย ควรเสร็จสิ้นก่อนทารกอายุครบ 32 สัปดาห์ หากช้ากว่าที่กำหนดให้ดำเนินการตามคำแนะนำการให้วัคซีนล่าช้า" },
             { age: 9, name: "MMR1", details: "MMR1 (วัคซีนรวมป้องกันโรคหัด-คางทูม-หัดเยอรมัน)" },
             { age: 12, name: "LAJE1", details: "LAJE1 (วัคซีนป้องกันโรคไข้สมองอักเสบเจอีชนิดเชื้อเป็นอ่อนฤทธิ ครั้งที่ 1" },
             { age: 18, name: "DTP4, OPV4, MMR2", details: "DTP4 (วัคซีนรวมป้องกันโรคคอตีบ-บาดทะยัก-ไอกรน ครั้งที่ 4) // OPV4(วัคซีนป้องกันโรคโปลิโอ ครั้งที่ 4)// MMR2 (วัคซีนรวมป้องกันโรคหัด-คางทูม-หัดเยอรมัน) ครั้งที่ 2" },
-			{ age: 30, name: "LAJE2", details: "LAJE2 (วัคซีนป้องกันโรคไข้สมองอักเสบเจอีชนิดเชื้อเป็นอ่อนฤทธิ์ ครั้งที่ 2"  },
+            { age: 30, name: "LAJE2", details: "LAJE2 (วัคซีนป้องกันโรคไข้สมองอักเสบเจอีชนิดเชื้อเป็นอ่อนฤทธิ์ ครั้งที่ 2"  },
             { age: 48, name: "DTP5, OPV5", details: "DTP5 (วัคซีนรวมป้องกันโรคคอตีบ-บาดทะยัก-ไอกรน ครั้งที่ 5), OPV5  (วัคซีนป้องกันโรคโปลิโอ ครั้งที่ 5) " }
         ];
 
         const hospital = document.getElementById("hospital").value;
         const hospitalInfo = hospitalData[hospital];
+        const scheduleType = document.getElementById('scheduleTypeToggle').checked ? "รายเดือน" : "รายสัปดาห์";
+        const scheduleDetail = document.getElementById('scheduleTypeToggle').checked 
+            ? `วันที่ ${document.getElementById('serviceDayOfMonth').value} ของเดือน` 
+            : `ทุกวัน${document.getElementById('serviceDay').value}`;
 
         let resultHtml = `<div class="mb-4">
             <p><strong>หน่วยบริการ:</strong> ${hospital}</p>
             <p><strong>เจ้าหน้าที่รับผิดชอบ:</strong> ${hospitalInfo.officer}</p>
             <p><strong>เบอร์โทรติดต่อ:</strong> ${hospitalInfo.phone}</p>
+            <p><strong>รูปแบบการนัด:</strong> ${scheduleType} (${scheduleDetail})</p>
         </div>`;
 
         resultHtml += '<table class="w-full border mt-4 text-sm sm:text-base"><thead><tr class="bg-gray-200">'
             + '<th class="border p-2">อายุ</th><th class="border p-2">วัคซีน</th><th class="border p-2">วันที่ครบอายุ</th><th class="border p-2">วันนัด</th></tr></thead><tbody>';
 
-        const targetDay = dayMap[document.getElementById('serviceDay').value];
+        const isMonthlySchedule = document.getElementById('scheduleTypeToggle').checked;
+        const dayOfMonth = isMonthlySchedule ? document.getElementById('serviceDayOfMonth').value : null;
 
         vaccines.forEach(vaccine => {
             if (vaccine.age > ageInMonths) { // แสดงเฉพาะวัคซีนที่เด็กยังไม่ได้รับ
                 let date = new Date(birthdate);
                 date.setMonth(date.getMonth() + vaccine.age);
 
-                let serviceDate = new Date(date);
-                let currentDay = serviceDate.getDay();
-                let dayDifference = targetDay - currentDay;
-                if (dayDifference <= 0) dayDifference += 7;
-                serviceDate.setDate(serviceDate.getDate() + dayDifference);
-
-                let isHolidayFlag = isHoliday(serviceDate);
-                if (isHolidayFlag) {
-                    serviceDate = getNextWeekSameDay(serviceDate); // เลื่อนไปวันเดียวกันในสัปดาห์ถัดไป
-                }
+                let serviceDate = findNextAvailableDay(date, dayOfMonth);
+                let origServiceDate = new Date(serviceDate);
+                
+                const isDateChanged = origServiceDate.getDate() !== serviceDate.getDate() || 
+                                     origServiceDate.getMonth() !== serviceDate.getMonth() || 
+                                     origServiceDate.getFullYear() !== serviceDate.getFullYear();
 
                 resultHtml += `<tr><td class='border p-2'>${vaccine.age} เดือน</td>
                             <td class='border p-2 flex items-center justify-between'>${vaccine.name} <button onclick="showVaccineInfo('${vaccine.name}', '${vaccine.details}')" class='bg-white-500 text-blue px-2 py-1 rounded-full text-xs'> >> </button></td>
                             <td class='border p-2'>${formatDateBE(date)}</td>
-                            <td class='border p-2'>${formatDateBE(serviceDate)} ${isHolidayFlag ? '<span class="holiday">(เลื่อนนัดเนื่องจากตรงกับวันหยุดราชการ)</span>' : ''}</td></tr>`;
+                            <td class='border p-2'>${formatDateBE(serviceDate)} ${isDateChanged ? '<span class="holiday">(เลื่อนนัดเนื่องจากตรงกับวันหยุด/วันหยุดราชการ)</span>' : ''}</td></tr>`;
             }
         });
 
@@ -228,13 +407,18 @@
     function printSchedule() {
         const result = document.getElementById('result').innerHTML;
         if (!result) {
-            alert("กรุณากรอกข้อมูลและกด Submit ก่อนพิมพ์");
+            Swal.fire({
+                title: 'ข้อผิดพลาด',
+                text: 'กรุณากรอกข้อมูลและคำนวณก่อนพิมพ์',
+                icon: 'error',
+                confirmButtonText: 'ตกลง'
+            });
             return;
         }
         window.print();
     }
 
-    function showVaccineInfo(name, details) {
+       function showVaccineInfo(name, details) {
         Swal.fire({
             title: name,
             text: details,
